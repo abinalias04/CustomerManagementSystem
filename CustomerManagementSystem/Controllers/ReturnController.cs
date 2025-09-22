@@ -24,11 +24,25 @@ namespace WebApp.Api.Controllers
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdClaim, out var userId))
-                return Unauthorized("Invalid user.");
+                return Unauthorized(new { message = "Invalid user." });
 
-            var returnId = await _returnRepository.CreateReturnRequestAsync(dto, userId);
-            return Ok(new { ReturnRequestId = returnId });
+            try
+            {
+                var returnId = await _returnRepository.CreateReturnRequestAsync(dto, userId);
+                return Ok(new { ReturnRequestId = returnId, success = true, message = "Return request created successfully." });
+            }
+            catch (ApplicationException ex) // from repository
+            {
+                // Map SQL RAISERROR to HTTP 400 (Bad Request)
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                // For unexpected errors
+                return StatusCode(500, new { success = false, message = "An unexpected error occurred." });
+            }
         }
+
 
         // 2) Approve return
         [HttpPost("{id}/approve")]

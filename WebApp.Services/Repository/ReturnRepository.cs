@@ -20,32 +20,44 @@ namespace WebApp.Services.Repository
         // 1) Create return request
         public async Task<int> CreateReturnRequestAsync(CreateReturnRequestDto dto, int userId)
         {
-            var userIdParam = new SqlParameter("@UserId", SqlDbType.Int) { Value = userId };
-            var purchaseIdParam = new SqlParameter("@PurchaseId", SqlDbType.Int) { Value = dto.PurchaseId };
-            var reasonParam = new SqlParameter("@Reason", SqlDbType.Int) { Value = (int)dto.Reason };
-            var commentsParam = new SqlParameter("@Comments", SqlDbType.NVarChar, 500) { Value = dto.Comments ?? string.Empty };
-
-            // For the items, pass as TVP (Table-Valued Parameter)
-            var dtItems = new DataTable();
-            dtItems.Columns.Add("PurchaseItemId", typeof(int));
-            dtItems.Columns.Add("Quantity", typeof(int));
-            foreach (var item in dto.Items)
-                dtItems.Rows.Add(item.PurchaseItemId, item.Quantity);
-
-            var itemsParam = new SqlParameter("@ReturnItems", SqlDbType.Structured)
+            try
             {
-                TypeName = "dbo.ReturnItemType", // TVP type in SQL
-                Value = dtItems
-            };
+                var userIdParam = new SqlParameter("@UserId", SqlDbType.Int) { Value = userId };
+                var purchaseIdParam = new SqlParameter("@PurchaseId", SqlDbType.Int) { Value = dto.PurchaseId };
+                var reasonParam = new SqlParameter("@Reason", SqlDbType.Int) { Value = (int)dto.Reason };
+                var commentsParam = new SqlParameter("@Comments", SqlDbType.NVarChar, 500) { Value = dto.Comments ?? string.Empty };
 
-            var returnIdParam = new SqlParameter("@ReturnRequestId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                // Build table-valued parameter (TVP)
+                var dtItems = new DataTable();
+                dtItems.Columns.Add("PurchaseItemId", typeof(int));
+                dtItems.Columns.Add("Quantity", typeof(int));
+                foreach (var item in dto.Items)
+                    dtItems.Rows.Add(item.PurchaseItemId, item.Quantity);
 
-            await _context.Database.ExecuteSqlRawAsync(
-                "EXEC [dbo].[CreateReturnRequest] @UserId, @PurchaseId, @Reason, @Comments, @ReturnItems, @ReturnRequestId OUTPUT",
-                userIdParam, purchaseIdParam, reasonParam, commentsParam, itemsParam, returnIdParam);
+                var itemsParam = new SqlParameter("@ReturnItems", SqlDbType.Structured)
+                {
+                    TypeName = "dbo.ReturnItemType", // SQL User-Defined Table Type
+                    Value = dtItems
+                };
 
-            return (int)returnIdParam.Value;
+                var returnIdParam = new SqlParameter("@ReturnRequestId", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Output
+                };
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC [dbo].[CreateReturnRequest] @UserId, @PurchaseId, @Reason, @Comments, @ReturnItems, @ReturnRequestId OUTPUT",
+                    userIdParam, purchaseIdParam, reasonParam, commentsParam, itemsParam, returnIdParam);
+
+                return (int)returnIdParam.Value;
+            }
+            catch (SqlException ex)
+            {
+                // Catch RAISERROR from SQL and surface as a friendly error
+                throw new ApplicationException(ex.Message);
+            }
         }
+
 
         // 2) Approve return request
         public async Task<bool> ApproveReturnRequestAsync(int returnRequestId, int adminId)
@@ -111,6 +123,7 @@ namespace WebApp.Services.Repository
                 ReturnDate = r.ReturnDate,
                 Status = r.Status.ToString(),
                 RefundAmount = r.RefundAmount,
+                Reason = (int)r.Reason,
                 Items = r.ReturnItems.Select(ri => new ReturnItemDto
                 {
                     ProductId = ri.PurchaseItem.ProductId,

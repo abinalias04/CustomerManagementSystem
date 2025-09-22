@@ -52,6 +52,7 @@ namespace WebApp.Entity.Dto
         public DateTime ReturnDate { get; set; }
         public string Status { get; set; }
         public decimal? RefundAmount { get; set; }
+        public int Reason { get; set; } 
 
         public List<ReturnItemDto> Items { get; set; } = new();
     }
