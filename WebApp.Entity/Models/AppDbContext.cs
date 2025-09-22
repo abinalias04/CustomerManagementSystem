@@ -156,7 +156,7 @@ namespace WebApp.Entity.Data
 
             // Seed Menus
             builder.Entity<Menu>().HasData(
-                // Customer
+                // Customer 
 
                 new Menu { MenuId = 2, Name = "Customer Dashboard", Path = "/customerdashboard" },
                  new Menu { MenuId = 1, Name = "Product List", Path = "/customer/products" },
