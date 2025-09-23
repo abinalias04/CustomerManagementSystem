@@ -158,8 +158,8 @@ namespace WebApp.Entity.Data
             builder.Entity<Menu>().HasData(
                 // Customer 
 
+                new Menu { MenuId = 1, Name = "Product List", Path = "/customer/products" },
                 new Menu { MenuId = 2, Name = "Customer Dashboard", Path = "/customerdashboard" },
-                 new Menu { MenuId = 1, Name = "Product List", Path = "/customer/products" },
                 new Menu { MenuId = 3, Name = "Cart", Path = "/customer/viewproduct" },
                 new Menu { MenuId = 4, Name = "Purchase History", Path = "/customer/purchasehistory" },
                 new Menu { MenuId = 5, Name = "My Returns", Path = "/customer/returnrequest" },

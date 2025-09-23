@@ -151,25 +151,30 @@ namespace WebApp.Services.Repository
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
-                .Take(parameters.PageSize)
-                .Select(p => new PurchaseResultDto
+            .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+            .Take(parameters.PageSize)
+            .Select(p => new PurchaseResultDto
+            {
+                PurchaseId = p.PurchaseId,
+                UserId = p.UserId,
+                NetTotal = p.NetTotal,
+                CreatedAt = p.CreatedAt,
+                IsProfileCompleted = p.User.IsProfileCompleted,
+                Items = p.PurchaseItems.Select(pi => new PurchaseItemDto
                 {
-                    PurchaseId = p.PurchaseId,
-                    UserId = p.UserId,
-                    NetTotal = p.NetTotal,
-                    CreatedAt = p.CreatedAt,
-                    IsProfileCompleted = p.User.IsProfileCompleted,
-                    Items = p.PurchaseItems.Select(pi => new PurchaseItemDto
-                    {
-                        PurchaseItemId = pi.PurchaseItemId,
-                        ProductId = pi.ProductId,
-                        ProductName = pi.Product.Name,
-                        UnitPrice = pi.Product.Price,
-                        Quantity = pi.Quantity
-                    }).ToList()
-                })
-                .ToListAsync();
+                    PurchaseItemId = pi.PurchaseItemId,
+                    ProductId = pi.ProductId,
+                    ProductName = pi.Product.Name,
+                    UnitPrice = pi.Product.Price,
+                    Quantity = pi.Quantity,
+                    ReturnedQuantity = pi.ReturnItems
+                        .Where(ri => ri.ReturnRequest.Status != ReturnStatus.Rejected)
+                        .Sum(ri => ri.Quantity)
+                }).ToList()
+            })
+            .ToListAsync(); 
+
+
 
             return new PagedResult<PurchaseResultDto>
             {

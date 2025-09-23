@@ -5,7 +5,9 @@ public class PurchaseItemDto
     public int ProductId { get; set; }
     public string ProductName { get; set; }
     public decimal UnitPrice { get; set; }
-    public int Quantity { get; set; }
+    public int Quantity { get; set; } //purchased quantity 
+    public int ReturnedQuantity { get; set; } // total returned so far
+    public int RemainingQuantity => Quantity - ReturnedQuantity;
     public decimal LineTotal => UnitPrice * Quantity;
 }
 
