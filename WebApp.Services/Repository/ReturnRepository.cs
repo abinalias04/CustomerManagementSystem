@@ -186,8 +186,11 @@ namespace WebApp.Services.Repository
         {
             var query = BuildReturnQuery().Where(r => r.UserId == userId);
 
+          
             if (!string.IsNullOrEmpty(parameters.SearchTerm))
-                query = query.Where(r => r.Status.ToString().Contains(parameters.SearchTerm));
+                query = query.Where(r => r.User.UserName.Contains(parameters.SearchTerm));
+            if (parameters.Status != null)
+                query = query.Where(r => r.Status == parameters.Status);
 
             query = parameters.SortBy?.ToLower() switch
             {
