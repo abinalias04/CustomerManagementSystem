@@ -35,6 +35,7 @@ namespace WebApp.Services.Repository
                 {
                     "name" => parameters.SortOrder?.ToLower() == "desc" ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name),
                     "price" => parameters.SortOrder?.ToLower() == "desc" ? query.OrderByDescending(p => p.Price) : query.OrderBy(p => p.Price),
+                    "stock" => parameters.SortOrder?.ToLower() == "desc" ? query.OrderByDescending(p => p.Stock) : query.OrderBy(p => p.Stock),
                     "createdat" => parameters.SortOrder?.ToLower() == "desc" ? query.OrderByDescending(p => p.CreatedAt) : query.OrderBy(p => p.CreatedAt),
                     _ => query.OrderBy(p => p.Name)
                 };
