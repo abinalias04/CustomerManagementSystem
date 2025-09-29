@@ -27,7 +27,7 @@ namespace WebApp.Services.Repository
                 var reasonParam = new SqlParameter("@Reason", SqlDbType.Int) { Value = (int)dto.Reason };
                 var commentsParam = new SqlParameter("@Comments", SqlDbType.NVarChar, 500) { Value = dto.Comments ?? string.Empty };
 
-                // Build table-valued parameter (TVP)
+                // Build table-valued parameter 
                 var dtItems = new DataTable();
                 dtItems.Columns.Add("PurchaseItemId", typeof(int));
                 dtItems.Columns.Add("Quantity", typeof(int));
@@ -132,7 +132,7 @@ namespace WebApp.Services.Repository
                     Quantity = ri.Quantity
                 }).ToList()
             };
-        }
+        }  
 
 
         public async Task<PagedResult<ReturnResultDto>> GetAllReturnsAsync(ReturnQueryParameters parameters)

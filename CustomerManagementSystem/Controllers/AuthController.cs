@@ -38,14 +38,30 @@ namespace WebApp.Controllers
             return BadRequest(new { message = result });
         }
 
+        //[HttpPost("login")]
+        //public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        //{
+        //    var response = await _authRepository.LoginAsync(dto);
+        //    if (response == null)
+        //        return Unauthorized(new { message = "Invalid credentials" });
+        //    return Ok(response);
+        //}
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var response = await _authRepository.LoginAsync(dto);
-            if (response == null)
-                return Unauthorized(new { message = "Invalid credentials" });
-            return Ok(response);
+            try
+            {
+                var response = await _authRepository.LoginAsync(dto);
+                if (response == null)
+                    return Unauthorized(new { message = "Invalid credentials" });
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = ex.Message, StackTrace = ex.StackTrace });
+            }
         }
+
 
         [HttpPost("logout")]
         public IActionResult Logout()

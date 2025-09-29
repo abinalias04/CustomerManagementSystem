@@ -126,11 +126,13 @@ builder.Services.AddMemoryCache();
 var app = builder.Build();
 
 // ------------------ Middleware ------------------
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+
+//}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAngular");
@@ -145,50 +147,50 @@ app.UseStaticFiles();
 
 app.MapControllers();
 
-// ------------------ Seed Roles & Admin ------------------
-await SeedRolesAndAdminAsync(app);
+//// ------------------ Seed Roles & Admin ------------------
+//await SeedRolesAndAdminAsync(app);
 
 app.Run();
 
-// ------------------ Seed Method ------------------
-static async Task SeedRolesAndAdminAsync(WebApplication app)
-{
-    using var scope = app.Services.CreateScope();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+//// ------------------ Seed Method ------------------
+//static async Task SeedRolesAndAdminAsync(WebApplication app)
+//{
+//    using var scope = app.Services.CreateScope();
+//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+//    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    // ----- Seed Default Admin -----
-    var adminEmail = "admin@gmail.com";
-    var adminPassword = "Admin@123"; // ⚠️ In production, store in appsettings or user secrets
+//    // ----- Seed Default Admin -----
+//    var adminEmail = "admin@gmail.com";
+//    var adminPassword = "Admin@123"; // ⚠️ In production, store in appsettings or user secrets
 
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser == null)
-    {
-        var newAdmin = new ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            FullName = "System Admin",
-            Role = UserRole.Admin,
-            Status = UserStatus.Active,
-            Badge = UserBadge.Gold,
-            DateJoined = DateTime.UtcNow,
-            EmailConfirmed = true,
-            CreatedAt = DateTime.UtcNow,
-            Address = "Head Office",
-            PhoneNumber = "0000000000"
-        };
+//    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+//    if (adminUser == null)
+//    {
+//        var newAdmin = new ApplicationUser
+//        {
+//            UserName = adminEmail,
+//            Email = adminEmail,
+//            FullName = "System Admin",
+//            Role = UserRole.Admin,
+//            Status = UserStatus.Active,
+//            Badge = UserBadge.Gold,
+//            DateJoined = DateTime.UtcNow,
+//            EmailConfirmed = true,
+//            CreatedAt = DateTime.UtcNow,
+//            Address = "Head Office",
+//            PhoneNumber = "0000000000"
+//        };
 
-        var result = await userManager.CreateAsync(newAdmin, adminPassword);
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(newAdmin, UserRole.Admin.ToString());
-            Console.WriteLine($"Seeded Default Admin: {adminEmail}");
-        }
-        else
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new Exception($"Failed to create default admin: {errors}");
-        }
-    }
-}
+//        var result = await userManager.CreateAsync(newAdmin, adminPassword);
+//        if (result.Succeeded)
+//        {
+//            await userManager.AddToRoleAsync(newAdmin, UserRole.Admin.ToString());
+//            Console.WriteLine($"Seeded Default Admin: {adminEmail}");
+//        }
+//        else
+//        {
+//            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+//            throw new Exception($"Failed to create default admin: {errors}");
+//        }
+//    }
+//}

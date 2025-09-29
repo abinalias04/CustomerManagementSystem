@@ -120,38 +120,50 @@ namespace WebApp.Services.Repository
 
         public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
         {
-            var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null || user.Status != UserStatus.Active)
-                return null;
-
-            var validPassword = await _userManager.CheckPasswordAsync(user, dto.Password);
-            if (!validPassword)
-                return null;
-
-            var token = await GenerateJwtToken(user);
-
-            var roles = await _userManager.GetRolesAsync(user);
-            var role = roles.FirstOrDefault() ?? "";
-
-            var roleEntity = await _roleManager.FindByNameAsync(user.Role.ToString());
-            var menus = await _context.RoleMenus
-                .Where(rm => rm.RoleId == roleEntity.Id)
-                .Select(rm => new MenuDto
-                {
-                    Id = rm.Menu.MenuId,
-                    Name = rm.Menu.Name,
-                    Path = rm.Menu.Path
-                })
-                .ToListAsync();
-
-            return new AuthResponseDto
+            try
             {
-                Token = token,
-                UserId = user.Id,
-                Email = user.Email,
-                Role = role,
-                Menus = menus
-            };
+
+
+                var user = await _userManager.FindByEmailAsync(dto.Email);
+                if (user == null || user.Status != UserStatus.Active)
+                    return null;
+
+                var validPassword = await _userManager.CheckPasswordAsync(user, dto.Password);
+                if (!validPassword)
+                    return null;
+
+                var token = await GenerateJwtToken(user);
+
+                var roles = await _userManager.GetRolesAsync(user);
+                var role = roles.FirstOrDefault() ?? "";
+
+                var roleEntity = await _roleManager.FindByNameAsync(user.Role.ToString());
+                var menus = await _context.RoleMenus
+                    .Where(rm => rm.RoleId == roleEntity.Id)
+                    .Select(rm => new MenuDto
+                    {
+                        Id = rm.Menu.MenuId,
+                        Name = rm.Menu.Name,
+                        Path = rm.Menu.Path
+                    })
+                    .ToListAsync();
+
+                return new AuthResponseDto
+                {
+                    Token = token,
+                    UserId = user.Id,
+                    Email = user.Email,
+                    Role = role,
+                    Menus = menus
+                };
+            }
+            
+            catch (Exception ex)
+            {
+                Logger.LogException(ex);
+                throw;
+                
+            }
         }
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
@@ -179,6 +191,36 @@ namespace WebApp.Services.Repository
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+    }
+    public static class Logger
+    {
+        private static readonly string LogFilePath = Path.Combine(Directory.GetCurrentDirectory(), "errorlog.txt");
+
+        public static void LogException(Exception ex)
+        {
+            try
+            {
+                // Ensure directory exists
+                var directory = Path.GetDirectoryName(LogFilePath);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Create file if not exists, else append
+                if (!File.Exists(LogFilePath))
+                {
+                    using (File.Create(LogFilePath)) { }
+                }
+
+                string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.Message}{Environment.NewLine}{ex.StackTrace}{Environment.NewLine}";
+                File.AppendAllText(LogFilePath, logEntry);
+            }
+            catch
+            {
+                // Avoid throwing if logging fails
+            }
         }
     }
 }
